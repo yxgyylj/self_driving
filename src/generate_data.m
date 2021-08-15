@@ -1,10 +1,10 @@
-% clear all; close all; clc;
-% 
-doTrainingAndEval = false;
-if ~doTrainingAndEval && ~exist('fasterRCNNResNet50EndToEndVehicleExample.mat','file')
-    disp('Downloading pretrained detector (118 MB)...');
-    pretrainedURL = 'https://www.mathworks.com/supportfiles/vision/data/fasterRCNNResNet50EndToEndVehicleExample.mat';
-    websave('fasterRCNNResNet50EndToEndVehicleExample.mat',pretrainedURL);
+clear; close all; clc;
+
+doTraining = false;
+if ~doTraining && ~exist('ssdResNet50VehicleExample_20a.mat','file')
+    disp('Downloading pretrained detector (44 MB)...');
+    pretrainedURL = 'https://www.mathworks.com/supportfiles/vision/data/ssdResNet50VehicleExample_20a.mat';
+    websave('ssdResNet50VehicleExample_20a.mat',pretrainedURL);
 end
 
 unzip vehicleDatasetImages.zip

@@ -1,13 +1,14 @@
-%clear all; close all; clc;
 
-% Create image input layer.
+% 搭建输入层。其维数和图片的大小相同，
+% 是 32（横轴） * 32（纵轴） * 3（RGB 三种颜色）
 inputLayer = imageInputLayer([32 32 3], 'Name','input');
-
-% Define the convolutional layer parameters.
+​
+% 搭建中间层（隐藏层）。一般分为三个步骤：
+% 卷积: 可以理解为对图片加滤镜，滤镜种类由所谓的"核函数确定"；
+% 激活：对特征张量进行一定程度的归一化，这也是神经网络中非线性的主要来源；
+% 池化：把特征张量进行简单的降维处理，减轻摄像头的学业负担；
 filterSize = [3 3];
 numFilters = 32;
-
-% Create the middle layers.
 middleLayers = [
 convolution2dLayer(filterSize, numFilters, 'Padding', 1, 'Name','conv1')
 reluLayer('Name', 'relu1')
@@ -15,19 +16,12 @@ convolution2dLayer(filterSize, numFilters, 'Padding', 1, 'Name','conv2')
 reluLayer('Name', 'relu2')
 maxPooling2dLayer(3, 'Stride',2, 'Name','mp')
 ];
-
+​
+% 搭建输出层
 finalLayers = [
-% Add a fully connected layer with 64 output neurons. The output size
-% of this layer will be an array with a length of 64.
 fullyConnectedLayer(64, 'Name','fc1')
-% Add a ReLU non-linearity.
 reluLayer('Name', 'relu3')
-% Add the last fully connected layer. At this point, the network must
-% produce outputs that can be used to measure whether the input image
-% belongs to one of the object classes or background. This measurement
-% is made using the subsequent loss layers.
 fullyConnectedLayer(width(vehicleDataset), 'Name','fc2')
-% Add the softmax loss layer and classification layer.
 softmaxLayer('Name', 'softmax')
 classificationLayer('Name', 'classification')
 ];
@@ -37,31 +31,14 @@ inputLayer
 middleLayers
 finalLayers
 ];
-inputSize = [224 224 3];
-numClasses = width(vehicleDataset)-1;
-numAnchors = 3;
-anchorBoxes = estimateAnchorBoxes(trainingData,numAnchors);
-% featureExtractionNetwork = resnet50;
-featureLayer = 'activation_40_relu';
-lgraph = fasterRCNNLayers(inputSize,numClasses,anchorBoxes,featureExtractionNetwork,featureLayer);
-% lgraph = fasterRCNNLayers(inputSize,numClasses,anchorBoxes,layers);
-
 
 options = trainingOptions('sgdm',...
     'MaxEpochs',10,...
     'MiniBatchSize',1,...
     'InitialLearnRate',1e-3,...
     'CheckpointPath',tempdir,...
-    'ValidationData',validationData);
+    'ValidationData',validationData,...
+    'ExecutionEnvironment', 'auto');
 
 [detector, info] = trainFastRCNNObjectDetector(trainingData,layers,options);
 
-% [detector, info] = trainFasterRCNNObjectDetector(trainingData,lgraph,options, ...
-%     'NegativeOverlapRange',[0 0.3], ...
-%     'PositiveOverlapRange',[0.6 1]);
-
-
-% detector = trainFasterRCNNObjectDetector(trainingData, layers, options, ...
-%     'NegativeOverlapRange', [0 0.3], ...
-%     'PositiveOverlapRange', [0.6 1], ...
-%     'BoxPyramidScale', 1.2);
